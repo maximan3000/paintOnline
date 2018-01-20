@@ -1,0 +1,56 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* тело документа */
+body {
+	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+	font-style: normal;
+	font-size: 18px;
+	font-weight: 400;
+	background-image: url(../img/bg.png);
+}
+
+
+/* весь блок страницы */
+.top_theme {
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 5px;
+	border-radius: 5px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 50px;
+	background-color: white;
+	font-size: 12px;
+}
+
+/* правая часть навигационного меню */
+.top_theme #bye_top {
+	float: right;
+}
+
+/* главный заголовок*/
+.top_theme h1 {
+	text-align: center;
+	font-size: 22px;
+	font-weight: 200;
+	padding-bottom: 20px;
+}
+.top_button {
+	height: 30px;
+}
+
+.top_button button {
+	background-color: white;
+	transition: all 0.5s;
+}
+
+.top_button button:hover {
+	background: #3f9db8;
+	border: 1px solid rgba(256,256,256,0.75);
+	
+	box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+	-moz-box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+	-webkit-box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+

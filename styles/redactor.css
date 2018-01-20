@@ -1,0 +1,187 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* весь блок страницы */
+.top_theme {
+	width: 800px;
+	height: 800px;
+}
+
+/* панель с инструментами и полотно для рисования */
+#draw_place {
+	margin-right: 50px;
+	float: left;
+	width: 500px;
+	height: 400px;
+	background-color:
+}
+
+/* полотно для рисования */
+#draw_place canvas {
+	/*width: 100%;
+	height: 500px; - иначе будет размазано и полетят координаты*/
+	margin-top: 50px;
+	display: block;
+	float: none;
+	margin-left: auto;
+	margin-right: auto;
+	
+}
+
+/* элементы панели инструментов */
+#draw_place #tools div {
+	display: block;
+	float: left;
+	/*background-color: burlywood;*/
+	margin: 10px;
+	opacity: 1;
+}
+
+/* иконки инструментов */
+#draw_place #tools div img {
+	height: 25px;
+	width: 25px;
+	padding: 5px;
+}
+
+/* наведение на иконки */
+.tool:hover {
+	-webkit-transform: scale(1.2);
+	-ms-transform: scale(1.2);
+	transform: scale(1.2);
+	opacity: 0.6;
+}
+
+/*инструмент контроля цвета*/
+#colorControl input {
+	height: 25px;
+	width: 25px;
+	margin-top: 5px;
+}
+
+/* ползунок размера кисти */
+#draw_place #tools #sizeControl span {
+	width: 1px; 
+	height: 1px; 
+	border-radius: 20px; 
+	background: #333;
+	display: block;
+    opacity: .50;
+    position: relative;
+    margin: -14.5px; 
+
+    pointer-events: none;
+    left: 60%;
+    top: 0px;
+    z-index: 50;
+    
+}
+
+#draw_place #tools #sizeControl input {
+	margin-top: 10px;
+	z-index: 100;
+	position: relative;
+}
+
+/* панель инструментов */
+#draw_place #tools {
+	float: left;
+	width: 100%;
+}
+
+/* прорисовка границы у областей */
+#chat, #draw_place #tools, #draw_place canvas {
+	border: #7A7A7A dashed 1px;
+	border-radius: 1px;
+}
+
+/* область сообщений чата */
+#chat {
+	padding: 5px;
+	height: 523px;
+	position: relative;
+	overflow:hidden;
+}
+
+/* вся область чата */
+#chat_area {
+	float: left;
+	margin-left: auto;
+	margin-right: auto;
+	width: 230px;
+}
+
+/* область чата вместе с областью для рисования */
+.socket {
+	padding-top: 50px;
+}
+
+/* блок ввода данных чата */
+.inputs {
+	
+}
+
+/* сообщение в чате */
+.message {
+	width: 50%;
+	margin: 5px;
+	padding: 5px;
+	border-radius: 5px;
+	overflow: visible;
+	word-wrap: break-word;
+	/*font-size: 200%; */
+}
+
+/* невидимый блок для старта отображения сообщений снизу */
+.hidden {
+    height: 503px;
+	display: block;
+}
+
+/* ваше сообщение в чате */
+.your_message {
+	text-align: right;
+	float: right;
+	background-color: rgba(131,255,180,0.5);
+}
+
+.avatar {
+	width: 30px;
+	height: 30px;
+	border-radius: 5px;
+	display:inline-block;
+}
+
+/* чужое сообщение в чате */
+.alien_message {
+	text-align: left;
+	float: left;
+	background-color: rgba(138,148,255,0.5);
+}
+
+/* поле ввода сообщения в чате */
+#form_message {
+	margin-top: 10px;
+}
+
+/* элементы формы */
+.form_inputs {
+	
+}
+
+/* элемент формы для ввода текста - textarea */
+#text_input {
+	float: left;
+	width: 180px;
+	height: 35px;
+}
+
+/* кнопка отправки данных формы */
+#submit_btn {
+	float: right;
+	width: 30px;
+	height: 30px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 5px;
+}
