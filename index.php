@@ -12,7 +12,7 @@
 
 <!-- основные стили страницы -->
 <!-- набор стилей для всех страниц -->
-<link href="styles/bground.css?=4" rel="stylesheet" type="text/css">
+<link href="styles/bground.css?=1" rel="stylesheet" type="text/css">
 <!-- набор стилей для текущей страницы -->
 <link href="styles/index.css?=1" rel="stylesheet" type="text/css">
 <!-- набор стилей для формы авторизации и регистрации -->
@@ -100,9 +100,9 @@
 <!--библиотека JQuery -->
 <script src="js/jquery-3.2.1.js" type="text/javascript"></script>
 <!-- скрипты для всех страниц -->
-<script src="js/bground.js?=4" type="text/javascript"></script>
+<script src="js/bground.js?=1" type="text/javascript"></script>
 <!-- основные скрипты данной страницы -->
-<script src="js/index.js?=6" type="text/javascript"></script>
+<script src="js/index.js?=1" type="text/javascript"></script>
 
 </body>
 </html>
