@@ -1,4 +1,7 @@
 <?php
+	
+	//require 'class/SessionController.php';
+
 	if ( $_GET['action']&&'logoff'==$_GET['action'] ){
 		session_start();
 		session_destroy();
