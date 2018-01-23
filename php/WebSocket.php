@@ -20,6 +20,10 @@
 			$this->info     = [];
 			$this->sessions = array();
 		}
+
+		function __destruct() {
+			fclose($this->socket); //закрытие потока сокета
+		}
 		
 		//запуск работы вебсокета
 		public function run () {
@@ -61,10 +65,6 @@
 					}
 				} 
 			}
-		}
-		
-		function __destruct() {
-			fclose($this->socket); //закрытие потока сокета
 		}
 		
 		//пересылка сообщений, полученных от сокета-клиента
