@@ -1,7 +1,7 @@
 
 <?php
 	session_start();
-	if ( $_SESSION['user_id'] ) {
+	if ( $_SESSION['login'] ) {
 		echo "true";
 	}
 	else {
@@ -21,23 +21,13 @@
 <link href="styles/main.css?=4" rel="stylesheet" type="text/css">
 <link href="styles/auth.css?=4" rel="stylesheet" type="text/css">
 
-<!--библиотека JQuery -->
-<script src="js/jquery-3.2.1.js" type="text/javascript"></script>
-<!--расширение JQuery для работы с сокетами ресурс: https://github.com/dchelimsky/jquery-websocket -->
-<script src="js/jquery.simple.websocket.js" type="text/javascript"></script>
-
-
-<!-- основные скрипты -->
-<script src="js/main.js?=6" type="text/javascript"></script>
-<script src="js/bground.js?=6" type="text/javascript"></script>
-
 </head>
 
 <body>
 
 <div class="top_theme">
   <header>
-    <div id="bye_top"> <span><?= $_SESSION['user_id'] ?></span> <button id="logout"> выйти </button> </div>
+    <div id="bye_top"> <span><?= $_SESSION['login'] ?></span> <button id="logout"> выйти </button> </div>
     <div> <a href="index.php"> на главную </a> </div>
   </header>
   <h1> Совместный графический редактор </h1>
@@ -69,6 +59,16 @@
   
   
 </div>
+
+<!--библиотека JQuery -->
+<script src="js/jquery-3.2.1.js" type="text/javascript"></script>
+<!--расширение JQuery для работы с сокетами ресурс: https://github.com/dchelimsky/jquery-websocket -->
+<script src="js/jquery.simple.websocket.js" type="text/javascript"></script>
+
+
+<!-- основные скрипты -->
+<script src="js/main.js?=3" type="text/javascript"></script>
+<script src="js/bground.js?=3" type="text/javascript"></script>
 
 </body>
 </html>

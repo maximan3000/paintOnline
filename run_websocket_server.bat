@@ -1,1 +1,1 @@
-C:\xampp\php\php.exe -q php/WebSocket.php
+C:\xampp\php\php.exe -q php/runSocket.php

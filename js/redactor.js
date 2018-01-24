@@ -47,7 +47,7 @@ function sendMessage(message, type) {
 		if ($.trim( message )) { //проверка, не пустое ли сообщение
 			
 			$.ajax({
-			url: 'php/logoff.php',         /* Куда пойдет запрос. */
+			url: 'php/index.php',         /* Куда пойдет запрос. */
 			method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
 			dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
 			contentType: 'application/json',
@@ -185,7 +185,7 @@ $(document).ready(function(){
 	webSocket.listen(getMessage);
 	
 	$.ajax({
-		url: 'php/logoff.php',         /* Куда пойдет запрос. */
+		url: 'php/index.php',         /* Куда пойдет запрос. */
 		method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
 		dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
 		contentType: 'application/json',

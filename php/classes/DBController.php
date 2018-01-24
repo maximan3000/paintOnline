@@ -7,7 +7,7 @@ require_once 'SessionController.php';
 */
 class DBController extends SessionController {
 
-	protected $mysqli_db; //переменная с информацией о соединении с базой
+	private $mysqli_db; //переменная с информацией о соединении с базой
 	
 	function __construct() { //конструктор класса
 		parent::__construct();
@@ -20,7 +20,7 @@ class DBController extends SessionController {
 		parent::__destruct();
 	}
 
-	private function dml($dml_str) { //выполнение dml операции с БД (data manipulation). Возвращает true при успешной операции
+	protected function dml($dml_str) { //выполнение dml операции с БД (data manipulation). Возвращает true при успешной операции
 		if ($dml_str&&0==mysqli_connect_errno()) { //проверка параметра и соединения с базой
 
 			$query_result= mysqli_query($this->mysqli_db, $dml_str); //выполнение запроса
@@ -32,13 +32,13 @@ class DBController extends SessionController {
 		return false;
 	}
 
-	private function sql($sql_str) { //выполнение выборки данных из БД. Возвращает данные выборки либо false
+	protected function sql($sql_str) { //выполнение выборки данных из БД. Возвращает данные выборки либо false
 		if ($sql_str&&0==mysqli_connect_errno()) { //проверка параметра и соединения с базой
 
 			$query_result= mysqli_query($this->mysqli_db, $sql_str); //выполнение запроса
 
 			if (0==mysqli_errno($this->mysqli_db)) { //проверка на наличие ошибок запроса к БД
-
+				$res=null;
 				for ($i=0; $i<mysqli_num_rows($query_result) ; $i++){
 					$res[$i] = mysqli_fetch_array($query_result, MYSQLI_ASSOC);
 				}//получение результата запроса	

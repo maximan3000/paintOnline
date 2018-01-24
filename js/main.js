@@ -54,7 +54,7 @@ $(document).ready(function() {
 	webSocket.listen(get_list);
 	
 	$.ajax({
-		url: 'php/logoff.php',         /* Куда пойдет запрос. */
+		url: 'php/index.php',         /* Куда пойдет запрос. */
 		method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
 		dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
 		contentType: 'application/json',

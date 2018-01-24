@@ -12,32 +12,31 @@ class SessionController {
 	}
 
 	function __destruct() {// деструктор класса
-		$this->destroy();
 	}
 
-	private function getInfo($type) { // получение информации сессии; на вход подается массив строк, где каждая строка - свойство сессии, информацию о которой нужно получить
+	protected function getInfo($type) { // получение информации сессии; на вход подается массив строк, где каждая строка - свойство сессии, информацию о которой нужно получить
 		$result = null;
 		if ($type) {
 			foreach ($type as $value) {
 				if ( $_SESSION[$value] ) {
-					$result[] = array( $value => $_SESSION[$value] );
+					$result[ $value ] = $_SESSION[$value] ;
 				}
 			}
 		}
 		return $result;
 	}
 
-	private function setInfo($value) { // установка свойств сессии; на вход подается массив с элементами типа ключ => значение, где ключ - название устанавливаемого свойства и значение - значение этого свойства
+	protected function setInfo($value) { // установка свойств сессии; на вход подается массив с элементами типа ключ => значение, где ключ - название устанавливаемого свойства и значение - значение этого свойства
 		if ($value) {
 			foreach ($value as $key => $value) {
-				$_SESSION][$key] = $value;
+				$_SESSION[$key] = $value;
 			}
 			return true;
 		}
 		else { return false; }
 	}
 
-	private function destroy() { // уничтожение работающей сессии
+	protected function destroy() { // уничтожение работающей сессии
 		session_destroy();
 	}
 

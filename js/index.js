@@ -6,15 +6,18 @@ function close_click() {
 
 function auth_click(event) {
 	event.preventDefault();
+	var get_data = $(auth_data).serialize();
+	get_data += '&action=auth';
+
 	$.ajax({
-    url: 'php/auth.php',         /* Куда пойдет запрос. */
+    url: 'php/index.php',         /* Куда пойдет запрос. */
     method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
     dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
     contentType: 'application/json',
     json: true, 
-    data: $(auth_data).serialize(),     /* Параметры передаваемые в запросе. */
+    data: get_data,     /* Параметры передаваемые в запросе. */
     success: function(data){   /* функция которая будет выполнена после успешного запроса.  */
-        if (data.result) {
+        if (data) {
 			$(location).attr('href','main.php');
 		}
 		else {
@@ -34,9 +37,10 @@ $(document).ready(function(){
 	$('#reg_submit_btn').click(function(event) {
 		event.preventDefault();
 		var send_data = new FormData(reg_data);
+		send_data.append( 'action', 'register' );
 		
 		$.ajax({
-			url: 'php/register.php',
+			url: 'php/index.php',
 			type: 'POST',
 			dataType: 'json',
 			processData: false,
@@ -44,7 +48,7 @@ $(document).ready(function(){
 			json: true, 
 			data: send_data,
 			success: function(data){ 
-				if (data.result) {
+				if (data) {
 					close_click();
 				}
 				else {

@@ -28,8 +28,8 @@
 		<div id="bye_top"> <!-- блок с логином пользователя (справа) -->
 			<?php
 
-			if( isset($_SESSION['user_id']) ) {
-			echo $_SESSION['user_id'].' <button id="logout"> выйти </button>';
+			if( isset($_SESSION['login']) ) {
+			echo $_SESSION['login'].' <button id="logout"> выйти </button>';
 			}
 			else {
 				echo "привет гость";
@@ -51,7 +51,7 @@
 			</div>
 
 			<div class="content"> <!-- поля для ввода данных -->
-				<input name="username" type="text" class="input username" title="Логин" placeholder="логин" required/> <!-- поле логина -->
+				<input name="login" type="text" class="input username" title="Логин" placeholder="логин" required/> <!-- поле логина -->
 				<input name="password" type="password" class="input password" title="Пароль" placeholder="пароль" required/> <!-- поле пароля -->
 			</div>
 
@@ -100,9 +100,9 @@
 <!--библиотека JQuery -->
 <script src="js/jquery-3.2.1.js" type="text/javascript"></script>
 <!-- скрипты для всех страниц -->
-<script src="js/bground.js?=1" type="text/javascript"></script>
+<script src="js/bground.js?=3" type="text/javascript"></script>
 <!-- основные скрипты данной страницы -->
-<script src="js/index.js?=1" type="text/javascript"></script>
+<script src="js/index.js?=3" type="text/javascript"></script>
 
 </body>
 </html>
