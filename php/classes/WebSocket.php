@@ -6,7 +6,7 @@
 		private $info; //информация о подключенных соединениях
 		private $sessions; //информация о сессиях
 		
-		function __construct ($address) {
+		function __construct ($address) { //конструктор класса - инициализация переменных и информирование в консоли о результате
 			$this->socket = stream_socket_server($address, $errno, $error); //создает websocket
 			
 			if (!$this->socket) { //если создать не получилось, убиваем файл
@@ -21,12 +21,11 @@
 			$this->sessions = array();
 		}
 
-		function __destruct() {
-			fclose($this->socket); //закрытие потока сокета
+		function __destruct() { //закрытие потока сокета
+			fclose($this->socket); 
 		}
 		
-		//запуск работы вебсокета
-		public function run () {
+		public function run () { //запуск работы вебсокета
 			while (true) {
 				$read = $this->connects; //формируем массив прослушиваемых сокетов: 
 				$read[]= $this->socket;	//добавляем к массиву сам сокет-сервер:
@@ -67,42 +66,7 @@
 			}
 		}
 		
-		//пересылка сообщений, полученных от сокета-клиента
-		private function multicast($connection, $message) {
-			$message = $this->encode( $message ); //представление сообщения в виде строки json и кодирование данных
-			$read = $this->connects; //формируем массив сокетов, которым отправим message
-			
-			if (!$connection) { 
-				foreach($read as $connect) {//массовая рассылка
-					fwrite($connect, $message); //отправка сообщения (запись в поток)
-				}
-			}
-			else {
-				unset($read[(int)$connection]); //удаляем сокет-автора message из рассылки
-				$k = null;
-				$login = $this->info[(int)$connection]['login'];
-				foreach ($this->sessions as $key=>$val){
-					foreach ($val as $elem) {
-						if ($elem == $login) {
-							$k = $key;
-						}
-					}
-				}
-				$users = $this->sessions[ $k ];
-				
-				foreach($read as $con_elem) {//массовая рассылка
-					foreach( $users as $val ){
-						if ( $val == $this->info[(int)$con_elem]['login'] ) {
-							echo "запись в $con_elem выполнена\n";
-							fwrite($con_elem, $message); //отправка сообщения (запись в поток)
-						}
-					}
-				}
-			}
-		} 
-		
-		//Функция рукопожатия
-		private function handshake($connect) { 
+		private function handshake($connect) { //Функция рукопожатия
 			$info = array(); 
 			$line = fgets($connect); 
 			$header = explode(' ', $line); 
@@ -139,8 +103,7 @@
 			return $info; 
 		}
 		
-		// Кодирование уходящих данных
-		private function encode($payload, $type = 'text', $masked = false) {
+		private function encode($payload, $type = 'text', $masked = false) { // Кодирование уходящих данных
 			$frameHead = array(); 
 			$payloadLength = strlen($payload); 
 
@@ -211,8 +174,7 @@
 			return $frame;
 		}
 		
-		// Декодирование входящих данных
-		private function decode($data) {
+		private function decode($data) {// Декодирование входящих данных
 			$unmaskedPayload = ''; 
 			$decodedData = array(); 
 
@@ -304,15 +266,46 @@
 			return $decodedData; 
 		}
 		
-		//обработка события подключения к сокету
-		private function onOpen($connect, $info) { 
+		private function onOpen($connect, $info) { //обработка события подключения к сокету
 			//echo "connected $connect\n ";
 			//print_r( $this->info[(int)$connect] );
 			//echo "\n";
 		}
 		
-		//передача информации о соединениях
-		private function sendInfo() {
+		private function multicast($connection, $message) { //пересылка сообщений, полученных от сокета-клиента
+			$message = $this->encode( $message ); //представление сообщения в виде строки json и кодирование данных
+			$read = $this->connects; //формируем массив сокетов, которым отправим message
+			
+			if (!$connection) { 
+				foreach($read as $connect) {//массовая рассылка
+					fwrite($connect, $message); //отправка сообщения (запись в поток)
+				}
+			}
+			else {
+				unset($read[(int)$connection]); //удаляем сокет-автора message из рассылки
+				$k = null;
+				$login = $this->info[(int)$connection]['login'];
+				foreach ($this->sessions as $key=>$val){
+					foreach ($val as $elem) {
+						if ($elem == $login) {
+							$k = $key;
+						}
+					}
+				}
+				$users = $this->sessions[ $k ];
+				
+				foreach($read as $con_elem) {//массовая рассылка
+					foreach( $users as $val ){
+						if ( $val == $this->info[(int)$con_elem]['login'] ) {
+							echo "запись в $con_elem выполнена\n";
+							fwrite($con_elem, $message); //отправка сообщения (запись в поток)
+						}
+					}
+				}
+			}
+		} 
+
+		private function sendInfo() { //передача информации о соединениях
 			$data = $this->sessions; //формируем массив сокетов
 			//массовая рассылка
 			$message = array( 'type'=>'list', 'items'=>array() );
@@ -322,18 +315,15 @@
 			$message = json_encode( $message );
 			echo $message;
 			$this->multicast(null, $message);
-			
 		}
 		
-		//обработка события закрытия соединения
-		private function onClose($connect) { 
+		private function onClose($connect) { //обработка события закрытия соединения
 			echo "connection $connect has been closed\n";
 			unset($this->connects[(int)$connect]);
 			unset($this->info[(int)$connect]);
 		} 
 		
-		//обработка события получения сообщения
-		private function onMessage($connect, $data) {		
+		private function onMessage($connect, $data) { //обработка события получения сообщения	
 			$data = json_decode(json_decode($data["payload"])); //берем переданные данные из $data: $data["payload"] и парсим json в переменную
 			echo "get message from $connect: "; //выводим данные в консоль
 			print_r( $data );
@@ -395,12 +385,4 @@
 			}
 		}
 	}
-
-	error_reporting(E_ALL);	//Выводим все ошибки и предупреждения 
-	set_time_limit(0); 			//Время выполнения скрипта ограничено 180 секундами 
-	ob_implicit_flush();		//Включаем вывод без буферизации  
-
-	$server = new WebSocket("tcp://127.0.0.1:3002");
-	$server->run();
-	
 ?>
