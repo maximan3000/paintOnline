@@ -1,32 +1,26 @@
 <?php 
 
-require_once 'WebSocket.php';
+require_once 'SessionWebSocket.php';
 
-class SocketController extends WebSocket {	
+class SocketController extends SessionWebSocket {	
 	
-	private $sessions; //информация о сессиях
-
 	function __construct ($address) {
 		parent::__construct($address);
-		$this->sessions = array();
 	}
 
 	function __destruct() { //закрытие потока сокета
 		parent::__destruct();
 	}
 
-	protected function onOpen($connect, $info) { //обработка события подключения к сокету
-	}
-	
-	protected function onClose($connect) { //обработка события закрытия соединения
-		echo "connection $connect has been closed\n";
-	} 
-	
 	protected function onMessage($connect, $data) { //обработка события получения сообщения	
-		$data = json_decode(json_decode($data["payload"])); //берем переданные данные из $data: $data["payload"] и парсим json в переменную
+		$data = parent::onMessage($connect, $data); //вызов метода родителя
+
 		echo "get message from $connect: "; //выводим данные в консоль
 		print_r( $data );
+		
 		echo "\n";
+		print_r( $this->sessions );
+		/*
 		if ( 'txtMessage' == $data->type ) {
 			if ( trim( $data->text ) ) { // проверяем, если передали пустую строку
 				$data->text = htmlspecialchars( $data->text ); //чистим от опасных элементов
@@ -82,51 +76,9 @@ class SocketController extends WebSocket {
 				}
 			}
 		}
+		*/
 	}
 
-	private function multicast($connection, $message) { //пересылка сообщений, полученных от сокета-клиента
-		$read = $this->connects; //формируем массив сокетов, которым отправим message
-		
-		if (!$connection) { 
-			foreach($read as $connect) {//массовая рассылка
-				$this->sendData($connect, $message); //отправка сообщения (запись в поток)
-			}
-		}
-		else {
-			unset($read[(int)$connection]); //удаляем сокет-автора message из рассылки
-			$k = null;
-			$login = $this->info[(int)$connection]['login'];
-			foreach ($this->sessions as $key=>$val){
-				foreach ($val as $elem) {
-					if ($elem == $login) {
-						$k = $key;
-					}
-				}
-			}
-			$users = $this->sessions[ $k ];
-			
-			foreach($read as $con_elem) {//массовая рассылка
-				foreach( $users as $val ){
-					if ( $val == $this->info[(int)$con_elem]['login'] ) {
-						echo "запись в $con_elem выполнена\n";
-						$this->sendData($con_elem, $message); //отправка сообщения (запись в поток)
-					}
-				}
-			}
-		}
-	} 
-
-	private function sendInfo() { //передача информации о соединениях
-		$data = $this->sessions; //формируем массив сокетов
-		//массовая рассылка
-		$message = array( 'type'=>'list', 'items'=>array() );
-		foreach($data as $elem) {
-			$message['items'][] = $elem['name'];
-		}
-		$message = json_encode( $message );
-		echo $message;
-		$this->multicast(null, $message);
-	}
 }
 
 ?>
