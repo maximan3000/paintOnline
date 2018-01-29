@@ -25,8 +25,8 @@ class AjaxController extends DBController {
 					$this->answer = array( 'result' => true );
 					break;
 				case 'login':
-					$this->answer = $this->getInfo( array('login') );
-					break; 
+					$this->answer = $this->getInfo( array('login', 'sessionID') );
+					break;
 				case 'fulldata':
 					$this->answer = $this->getInfo( array('login', 'name', 'avatar') );
 					break;

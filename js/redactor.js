@@ -47,20 +47,17 @@ function sendMessage(message, type) {
 		if ($.trim( message )) { //проверка, не пустое ли сообщение
 			
 			$.ajax({
-			url: 'php/index.php',         /* Куда пойдет запрос. */
-			method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
-			dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
-			contentType: 'application/json',
-			json: true, 
-			data: {'action':'fulldata'},     /* Параметры передаваемые в запросе. */
-			success: function(data){   /* функция которая будет выполнена после успешного запроса.  */
-				webSocket.send( 
-					JSON.stringify({ //отправка сообщения сокету-серверу (предварительно преобразуя в json)
+			url: 'php/index.php',
+			method: 'GET', 
+			dataType: 'json',
+			data: 'action=fulldata',
+			success: function(data){ 
+				webSocket.send({
 					'type': 'txtMessage', //тип - сообщение чата
 					'nickname': data.nickname,
 					'avatar': data.avatar,
 					'text': message //текст сообщения
-				}));
+				}); //отправка сообщения сокету-серверу
 				createMessage( {'text': message, 'nickname':data.nickname, 'avatar': data.avatar } , 'mine');
 				} 
 			}); 
@@ -73,13 +70,13 @@ function sendMessage(message, type) {
 		message.strokeStyle = ctx.strokeStyle;
 		message.lineWidth = ctx.lineWidth;
 		message.type = 'pngMessage';
-		webSocket.send(	JSON.stringify( message ) );
+		webSocket.send(	message );
 	}
 }
 
 //обработчик события - получения сообщения от сервера
 function getMessage(message) { 
-	msg = JSON.parse( message ); //парсинг объекта json (строка => объект)
+	msg = message; //парсинг объекта json (строка => объект)
 	if ( 'txtMessage' == msg.type ) {
 		createMessage( { 'text': msg.text, 'nickname': msg.nickname, 'avatar': msg.avatar } , 'alien'); //отображение полученного в чате сообщения
 	}
@@ -101,6 +98,9 @@ function getMessage(message) {
 		ctx.strokeStyle = temp.sS;
 		ctx.lineWidth = temp.lW;
 	} 
+	else if ( 'exitSession' == msg.type ) {
+		if (msg.result) { $(location).attr('href','main.php'); }
+	}
 }
 
 //функция выбора инструмента рисования
@@ -185,25 +185,21 @@ $(document).ready(function(){
 	webSocket.listen(getMessage);
 	
 	$.ajax({
-		url: 'php/index.php',         /* Куда пойдет запрос. */
-		method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
-		dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
-		contentType: 'application/json',
-		json: true, 
-		data: {'action':'login'},     /* Параметры передаваемые в запросе. */
-		success: function(data){   /* функция которая будет выполнена после успешного запроса.  */
-			login = data;
+		url: 'php/index.php',
+		method: 'GET',
+		dataType: 'json',
+		data: 'action=login',
+		success: function(data) {
 			var message = { 
 				'type': 'sessionMessage', 
 				'action' : 'open',
-				'broad' : false,
-				'login' : login 
+				'broad' : true,
+				'sessionID' : data.sessionID 
 			};
-			webSocket.send(	JSON.stringify( message ) );
+			webSocket.send(	message );
 			load_actions();
 		} 
 	}); 
-	
 });
 
 function load_actions() {
@@ -242,12 +238,10 @@ function load_actions() {
 	//событие выхода из сессии
 	$("#exit_session").click(function(event) {
 		var message = { 
-				'type': 'sessionMessage', 
-				'action' : 'exit',
-				'login' : login 
-			};
-		webSocket.send(	JSON.stringify( message ) );
-		$(location).attr('href','main.php');
+			'type': 'sessionMessage', 
+			'action' : 'exit'
+		};
+		webSocket.send(	message );
 	});
 
 }

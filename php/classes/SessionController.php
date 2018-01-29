@@ -9,6 +9,7 @@ class SessionController {
 
 	function __construct() {
 		session_start(); //старт сессии
+		$_SESSION['sessionID'] = session_id();
 	}
 
 	function __destruct() {// деструктор класса

@@ -67,7 +67,7 @@
 
 
 <!-- основные скрипты -->
-<script src="js/main.js?=3" type="text/javascript"></script>
+<script src="js/main.js?=7" type="text/javascript"></script>
 <script src="js/bground.js?=3" type="text/javascript"></script>
 
 </body>

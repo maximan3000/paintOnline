@@ -1,43 +1,60 @@
 // JavaScript Document
-var login;
+var login; //логин
 var webSocket; //сокет-клиент
+var sessionID; //идентификатор сессии
 
-function create_session_elem (name) {
+function create_session_elem (data) {
 	var form = $('<form></form>');
-	var name = $('<div>'+name+'</div>');
+	var name = $('<div>'+data.name+'</div>');
+	var hostID = $('<span value="'+data.hostID+'"></span>');
 	var pass = $('<input type="password" value="пароль" class="input password" onfocus="this.value='+"''"+'" required>');
 	var subm = $('<input type="submit" name="submit" value="войти" class="button"/>')
-	form.append(name).append(pass).append(subm);
+	form.append(name).append(hostID).append(pass).append(subm);
 	
 	subm.click(function(event){
 		event.preventDefault();
 		var message = { 
 			'type': 'sessionMessage', 
 			'action' : 'enter',
-			'name' : name.text(),
+			'hostID' : hostID.attr('value'),
 			'password' : pass.val()
 		};
-		webSocket.send(	JSON.stringify( message ) );
+		webSocket.send(	message );
 	});
 	
 	$('#session_container').append(form);
 }
 
 function get_list(data) {
-	if ( 'list' == data.type){
+	console.dir(data);
+	if ( 'infoSession' == data.type){
 		$('#session_container form').remove();
 		$.map( data.items, function (elem){
 			create_session_elem(elem);
 		});
 	}
-	else if ( 'submit' == data.type ){
-		if (data.allow) {
-			$(location).attr('href','redactor.php');
+	else if ( 'createSession' == data.type ){
+		if (data.result) {
+			var msg = { 
+				'type': 'sessionMessage', 
+				'action' : 'enter',
+				'hostID' : sessionID,
+				'password' : $(content_pswd).val()
+			};
+			webSocket.send(	msg );
 		}
 		else {
-			alert('неправильный пароль');
+			alert('неккоректные данные');
 		}
 	}
+	else if ( 'enterSession' == data.type ) {
+		if (data.result) {
+			$(location).attr('href','redactor.php');
+		}
+	}
+	else {
+			alert('неправильный пароль');
+		}
 }
 
 $(document).ready(function() {
@@ -54,21 +71,19 @@ $(document).ready(function() {
 	webSocket.listen(get_list);
 	
 	$.ajax({
-		url: 'php/index.php',         /* Куда пойдет запрос. */
-		method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
-		dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
-		contentType: 'application/json',
-		json: true, 
-		data: {'action':'login'},     /* Параметры передаваемые в запросе. */
-		success: function(data){   /* функция которая будет выполнена после успешного запроса.  */
-			login = data;
+		url: 'php/index.php',
+		method: 'GET',
+		dataType: 'json',
+		data: 'action=login',
+		success: function(data) {
+			sessionID = data.sessionID;
 			var message = { 
 				'type': 'sessionMessage', 
 				'action' : 'open',
 				'broad' : true,
-				'login' : login 
+				'sessionID' : sessionID 
 			};
-			webSocket.send(	JSON.stringify( message ) );
+			webSocket.send(	message );
 		} 
 		}); 
 	
@@ -80,6 +95,6 @@ $(document).ready(function() {
 			'name' : $(content_txt).val(),
 			'password' : $(content_pswd).val()
 		};
-		webSocket.send(	JSON.stringify( message ) );
+		webSocket.send(	message );
 	});
 });
