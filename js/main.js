@@ -62,8 +62,8 @@ $(document).ready(function() {
 		{
 			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'
 			//protocols: 'tcp', optional - не создано описание в WebSocket.php
-			timeout: 20000, // optional, default timeout between connection attempts
-			attempts: 1, // optional, default attempts until closing connection
+			timeout: 1000, // optional, default timeout between connection attempts
+			attempts: 5, // optional, default attempts until closing connection
 			dataType: 'json' // optional (xml, json, text), default json
 		}
 	);

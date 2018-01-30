@@ -69,7 +69,7 @@
 <script src="js/jquery.slimscroll.min.js" type="text/javascript"></script>
 
 <!-- основные скрипты -->
-<script src="js/redactor.js?=4" type="text/javascript"></script>
+<script src="js/redactor.js?=5" type="text/javascript"></script>
 <!-- работа кисти-skatch -->
 <script src="js/skatch.js?=3" type="text/javascript"></script>
 <!-- работа кисти-brush -->

@@ -8,8 +8,10 @@ require_once 'WebSocket.php';
 class SessionWebSocket extends WebSocket {
 
 	/*добавилось: 
-	$info[(int)$connect]['clientID'] - идентификатор сессии клиента (ид сеанса авторизации)
+	$info[(int)$connect]['clientID'] - идентификатор клиента (ид сеанса авторизации)
 	$info[(int)$connect]['session'] - идентификатор сессии сокета, к которой принадлежит клиент
+	$session - переменная с информацией о сессиях (описание в конструкторе)
+
 	*/
 	protected $sessions; //информация о сессиях
 	protected $startSession = 'general'; //название изначальной сессии - общей для всех
@@ -17,8 +19,15 @@ class SessionWebSocket extends WebSocket {
 	function __construct ($address) { //инициализация класса
 		parent::__construct($address);
 		$this->sessions = array( 
-			$this->startSession => array(
-				'connects' => array()
+			$this->startSession => array( 
+				'data' => array( //данные для подключения к сессии
+					'name' => null, //название сессии
+					'hostID' => null, //идентификатор сессии = идентификатор клиента-создателя
+					'password' => null //пароль для подключения к сессии
+					),
+				'connects' => array(), //массив прямых подключений сессии
+				'clients' => array() //массив идентификаторов клиентов, которые подключены к сессии 
+				//!!! в общей сессии задействовано только свойство 'connects'
 			)
 		);
 	}
@@ -43,75 +52,29 @@ class SessionWebSocket extends WebSocket {
 
 	protected function onClose($connect) { //обработка события закрытия соединения - переопределение метода
 		echo "\n connection $connect closed...";
-		$this->exitSession($connect);
-		echo "\n"; print_r($this->sessions); echo "\n";
-	}
-
-	/* ******************************************************** */
-	/*														 	*/
-	/* ******************************************************** */
-
-	protected function authSession($sessionID, $password) {
-		if ( isset($this->sessions[$sessionID]) && $this->sessions[$sessionID]['data']['password'] == $password ) {
-			$this
-			return true;
-		}
-		return false;
+		$this->clearConnect($connect);
 	}
 
 	protected function sendData($connect, $data) { //отправка данных - переопределение функции
-		echo "\nsend message:\n"; print_r($data); echo "\n";
+		echo "\nsend message to $connect:\n"; print_r($data); echo "\n";
 		$data = json_encode($data); //кодирование объекта в json
 		parent::sendData($connect, $data); //вызов старого метода
 	}
 
-	protected function exitSession($connect) { //выход сокет-клиента из сессии
-		if ( isset($this->info[(int)$connect]['clientID']) && $this->info[(int)$connect]['session'] == $this->info[(int)$connect]['clientID'] ) { //если данный клиент является хостом сессии (при условии что клиент успел передать свои данные clientID)
-			$this->deleteSession( $this->info[(int)$connect]['session'] );
-			echo "\nexiting host from session\n";
-		}
-		else { //если данный клиент не является хостом
-			$info = $this->info[(int)$connect]['session']; //информация о сессии клиента; проверять, есть ли эта информация не нужно, так как она точно задается при открытии соединения
-			$index = array_search($connect, $this->sessions[$info]['connects']);
-			$indexID = array_search($connect, $this->sessions[$info]['sessionsID']);
-			unset( $this->sessions[$info]['connects'][$index] ); //удаляем данный сокет из сессии, которой он принадлежит
-			unset( $this->sessions[$info]['sessionsID'][$indexID] ); //удаляем данный сокет из сессии, которой он принадлежит
-			echo "\nexiting common from session\n";
-		}
-		echo "\n"; print_r($this->sessions); echo "\n";
-	}
+	/* ******************************************************** */
+	/*			методы для работы сессий					 	*/
+	/* ******************************************************** */
 
-	protected function enterSession($connect, $authData) { //вход сокет-клиента $connect в сессию с идентификатором $sessionID
-		if ( $this->sessions[ $authData['sessionID'] ]['data']['password'] == $authData['password'] ) { //если отправленные клиентом пароль для сессии, к которой он подключается совпадают с установленным хостом паролем, то подключение успешно
-			$this->exitSession($connect); //выход из предыдущей (общей) сессии
-			$this->sessions[ $authData['sessionID'] ]['connects'][] = $connect; //вход в текущую сессию
-			return true;
-		}
-		else {
-			return false;
-		}	
-	}
-
-	protected function sessionCast($connection, $sessionID, $message) { //групповая пересылка сообщений, полученных от сокета-клиента (либо всем в группе, если вместо $connection стоит null)
-		$read = $this->sessions[$sessionID]['connects']; //формируем массив сокетов, которым отправим message
-
-		if ($connection) { 
-			unset($read[(int)$connection]); //удаляем сокет-автора message из 
-		}
-		foreach($read as $connect) {//массовая рассылка
-			$this->sendData($connect, $message); //отправка сообщения (запись в поток)
-		}
-	}
-
-	protected function createSession($connection, $authData) { //создание новой сессии сокет-клиентом $connetion на его имя с данными сессии $authData. при удаче возвращаеся true
-		if ( isset( $this->info[(int)$connection]['clientID'] ) ) { //если клиент передал идентификатор сессии
+	protected function createSession($connection, $authData) { //создание новой сессии сокет-клиентом $connetion на его имя с данными сессии $authData. при удаче возвращаеся true. $authData = array( 'name' => string, 'password' => string )
+		if ( isset( $this->info[(int)$connection]['clientID'] ) ) { //если клиент передал свой идентификатор
 			$this->sessions[ $this->info[(int)$connection]['clientID'] ] = array( 
 				'data' => array( 
-					'name' => $authData->name,
+					'name' => $authData['name'],
 					'hostID' => $this->info[(int)$connection]['clientID'],
-					'password' => $authData->password 
+					'password' => $authData['password'] 
 					),
-				'connects' => array()
+				'connects' => array(),
+				'clients' => array()
 			); //сессия создается на имя (идентификатор) создателя и будет работать, пока создатель не удалит её (не выйдет из сессии). В поле data хранятся данные для подключения к сессии, а поле connects содержит массив сокетов, которые в данный момент подключены к сессии
 			return true; //удалось создать сессию
 		}
@@ -120,21 +83,58 @@ class SessionWebSocket extends WebSocket {
 		}
 	}
 
-	protected function deleteSession($sessionID) { //удаляет сессию с данным идентификатором и полсылает сообщение всем подключенным к сессии клиентам, что сессия удалена
-		$message = array( 
-			'type' => 'sessionMessage',
-			'action' => 'deleteSession' 
-		);
-		foreach ($this->sessions[ $sessionID ]['connects'] as $connect) {
-			$this->sendData( $connect, $message );
-			//удалять из сокет клиента информацию о сессии и добавлять его к общей сессии (general) не нужно, так как:
-			//при правильной работе клиента после отправки ему данного сообщения он должен переподключиться, и ему будут переназначены данные параметры
-			//в случае неправильной работы, сокет клиент просто останется вне сессий и не будет получать сообщений
-
-			//но все же сделаем это =)
-			$this->info[(int)$connect]['session'] = $this->startSession;
+	protected function authSession($connect, $sessionID, $password) { //подключение $connect к сессии $sessionID. возвращает true, если переданный пароль $password подходит к сессии с ИД $sessionID
+		if ( isset($this->sessions[$sessionID]) && $this->sessions[$sessionID]['data']['password'] == $password ) {
+			$this->enterSession($connect, $sessionID);
+			return true;
 		}
-		unset( $this->sessions[ $sessionID ] );
+		return false;
+	}
+
+	protected function replaceSession($connect) { //функция, перетаскивающая соединение $connect в прямое подключение к сессии (добавление в 'connects'), для которой в массиве 'clients' есть этот клиент. Если такой сессии нет, то клиент остается в общей сессии. Функция должна отработать сразу после получения от клиента его hostID
+		foreach ($this->sessions as $key => $value) {
+			if ( $key!=$this->startSession && in_array( $this->info[(int)$connect]['clientID'] , $value['clients'])) { //если это не общая сессия и данный клиент присутствует в списке подключенных к данной сессии
+				$this->exitSession($connect); //выход клиента из общей сессии (так как в иной он быть не может)
+				$this->info[(int)$connect]['session'] = $key;
+				$this->sessions[$key]['connects'][] = $connect;
+			}
+		}
+	}
+
+	protected function exitSession($connect) { //выход сокет-клиента из сессии
+		if ( isset($this->info[(int)$connect]['clientID']) && $this->info[(int)$connect]['session'] == $this->info[(int)$connect]['clientID'] ) { //если данный клиент является хостом сессии
+			$this->deleteSession( $this->info[(int)$connect]['session'] ); //удаляется вся сессия
+			echo "\nexiting host client from session ".$this->info[(int)$connect]['session']."\n";
+		}
+		else if ( $this->info[(int)$connect]['session']!=$this->startSession ) { //если данный клиент не является хостом и находится в локальной сессии
+			$info = $this->info[(int)$connect]['session']; //информация о сессии клиента; проверять, есть ли эта информация не нужно, так как она точно задается при открытии соединения
+			$indexConn = array_search( $connect, $this->sessions[$info]['connects'] ); //поиск данного соединения среди прямых подключений сессии
+			$indexID = array_search( $this->info[(int)$connect]['clientID'], $this->sessions[$info]['clients']); //поиск идентификатора клиента среди подключенных к сессии клиентов
+			unset( $this->sessions[$info]['connects'][$indexConn] ); //удаляем данный сокет из сессии, которой он принадлежит
+			unset( $this->sessions[$info]['clients'][$indexID] ); //удаляем данный сокет из сессии, которой он принадлежит
+
+			//возвращение клиента к общей сессии
+			$this->info[(int)$connect]['session'] = $this->startSession;
+			$this->sessions[ $this->startSession ]['connects'][] = $connect;
+
+			echo "\nexiting common client from session ".$this->info[(int)$connect]['session']."\n";
+		}
+		else { //если данный клиент находится в общей сессии
+			$indexConn = array_search( $connect, $this->sessions[$this->startSession]['connects'] );
+			unset( $this->sessions[$this->startSession]['connects'][$indexConn] ); //удаляем данный сокет из сессии, которой он принадлежит
+			echo "\nexiting common client from session ".$this->startSession."\n";
+		}
+	}
+
+	protected function sessionCast($connection, $sessionID, $message) { //групповая пересылка сообщений, полученных от сокета-клиента (либо всем в группе, если вместо $connection стоит null)
+		$read = $this->sessions[$sessionID]['connects']; //формируем массив сокетов, которым отправим message
+
+		if ($connection) { 
+			unset($read[ array_search($connection, $read) ]); //удаляем сокет-автора message из рассылки 
+		}
+		foreach($read as $connect) {//массовая рассылка
+			$this->sendData($connect, $message); //отправка сообщения (запись в поток)
+		}
 	}
 
 	protected function getShortInfo() { //возвращает короткую информацию (название, ид хоста) для каждой сессии, созданной клиентом
@@ -149,6 +149,42 @@ class SessionWebSocket extends WebSocket {
 		}
 		return $sessData;
 	}
+
+	/* ******************************************************** */
+	/*			вспомогательные методы класса				 	*/
+	/* ******************************************************** */
+
+	private function enterSession($connect, $sessionID) { //добавление сокет-клиента $connect в сессию $sessionID
+		$this->exitSession($connect); //выход из предыдущей (общей) сессии
+		$this->sessions[ $sessionID ]['clients'][] = $this->info[(int)$connect]['clientID']; //вход в текущую сессию
+	}
+
+	private function deleteSession($sessionID) { //удаляет сессию с данным идентификатором и полсылает сообщение всем подключенным к сессии клиентам, что сессия удалена
+		$message = array( 
+			'type' => 'exitSession', 
+			'result' => true 
+		); //результат выхода из сессии
+		foreach ($this->sessions[ $sessionID ]['connects'] as $connect) {
+			$this->sendData( $connect, $message );
+			//при правильной работе клиента после отправки ему данного сообщения он должен переподключиться, и ему будут переназначены данные параметры
+			//в случае неправильной работы, сокет клиент просто останется вне сессий и не будет получать сообщений
+
+			//но все же стоит переназначить его сессию
+			$this->info[(int)$connect]['session'] = $this->startSession;
+			$this->sessions[ $this->startSession ]['connects'][] = $connect;
+		}
+		unset( $this->sessions[ $sessionID ] );
+	}
+
+	private function clearConnect($connect) { //для закрытия соединения - удаляет все связи (прямые соединения) данного клиента
+		foreach ($this->sessions as $key => $value) {
+			$index = array_search( $connect,  $value['connects']);
+			if ($index!==false) {
+				unset( $this->sessions[$key]['connects'][$index] );
+			}
+		}
+	}
+
 }
 
 ?>

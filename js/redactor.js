@@ -236,7 +236,7 @@ function load_actions() {
 	$("#clear").click( clearCanvas );
 	
 	//событие выхода из сессии
-	$("#exit_session").click(function(event) {
+	$("#exit_session, #logout").click(function(event) {
 		var message = { 
 			'type': 'sessionMessage', 
 			'action' : 'exit'

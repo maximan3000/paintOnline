@@ -1,11 +1,30 @@
 <?php 
 
-//последняя идея - перепроверить работу с сессиями и переделать так, чтобы в переменную сессии записывался идентификатор сеанса клиента, а потом при подключении к сокету при получении от него этого идентификатора, происходило бы перетаскивание этого сокета в коннекты у переменной сессий
-
 require_once 'SessionWebSocket.php';
 
+
+/*
+класс для обработки сообщений, получаемых от клиента
+*/
 class SocketController extends SessionWebSocket {	
-	
+	/*
+	типы сообщений: (... означает любое число любых параметров - они не обрабатываются сервером, а просто пересылаются)
+
+	от клиента
+		1) msg ( 'type' => 'txtMessage', 'text' => string, ...) - текстовое сообщение
+		2) msg ( 'type' => 'pngMessage', ...) - графическое сообщение
+		3) msg ( 'type' => 'sessionMessage', 'action' => 'open', 'sessionID' => string) - первое сообщение после рукопожатия. передача ид клиента и инициализация
+		4) msg ( 'type' => 'sessionMessage', 'action' => 'create', 'name' => string, 'password' => string) - создание сессии
+		5) msg ( 'type' => 'sessionMessage', 'action' => 'enter', 'hostID' => string, 'password' => string) - заход в сессию
+		6) msg ( 'type' => 'sessionMessage', 'action' => 'exit') - выход из сессии
+
+	от сервера
+		1) msg ( 'type' => 'createSession', 'result' => boolean) - результат создания сессии
+		2) msg ( 'type' => 'enterSession', 'result' => boolean) - результат входа в сессию (аутентификации)
+		3) msg ( 'type' => 'exitSession', 'result' => boolean) - выход клиента из текущей сессии (boolean тут наверно не нужен)
+		4) msg ( 'type' => 'infoSession', 'items' => array( number => array( 'hostID' => string, 'name' => string ), number => ...) ) - короткая информация по всем созданным сессиям
+	*/
+
 	function __construct ($address) {
 		parent::__construct($address);
 	}
@@ -17,9 +36,7 @@ class SocketController extends SessionWebSocket {
 	protected function onMessage($connect, $data) { //обработка события получения сообщения	
 		$data = parent::onMessage($connect, $data); //вызов метода родителя
 
-		echo "get message from $connect: "; //выводим данные в консоль
-		print_r( $data );
-		echo "\n"; print_r($this->sessions); echo "\n";
+		echo "get message from $connect: ";print_r( $data ); echo "\n"; //выводим данные в консоль
 		switch ($data->type) {
 			case 'txtMessage': //текстовое сообщение (для чата)
 				if ( trim( $data->text ) ) { // проверяем, если передали пустую строку
@@ -33,25 +50,22 @@ class SocketController extends SessionWebSocket {
 			case 'sessionMessage': //управляющее сообщение (для работы сессий)
 				switch ($data->action) {
 					case 'open': //первое действие при подключении - получение от клиента идентификатора его сессии
-						$this->info[(int)$connect]['clientID'] = $data->sessionID;
-						//if ($data->broad) { $this->sendInfo(); }
+						$this->info[(int)$connect]['clientID'] = $data->sessionID; //присваивание идентификатора клиенту
+						$this->replaceSession($connect); //перевод сессии клиента
+						$this->sendSessionInfo($connect); //пересылка созданных сессий клиенту $connect (перешлется, если он в общей сессии)
 						break;
 					case 'create': //событие создания сессии
-						$answer = array( 
+						$answer = array( //результат создания сессии
 							'type' => 'createSession', 
 							'result' => false 
-						); //результат создания сессии
-
-						if ( $this->createSession($connect, $data) ) {
-
-							$message = array( //информация о сессиях
-								'type' => 'infoSession',
-								'items' => array()
-							);
-							$message['items'] = $this->getShortInfo();
-
+						); 
+						$authData = array( //данные сессии для функции createSession
+							'name' => $data->name, 
+							'password' => $data->password 
+						);
+						if ( $this->createSession($connect, $authData) ) {
 							$answer['result'] = true;
-							$this->sessionCast(null, $this->startSession, $message); //пересылка данных созданной сессии всем ожидающим клиентам 
+							$this->sendSessionInfo(null); //пересылка созданных сессий всем клиентам в общей сессии 
 						}
 						$this->sendData($connect, $answer); //отправка результата хосту (от него требуется операция захода в редактор)
 						break;
@@ -61,7 +75,7 @@ class SocketController extends SessionWebSocket {
 							'result' => false 
 						); //результат входа в сессиию
 
-						if ( isset($data->hostID, $data->password) && $this->authSession($data->hostID, $data->password) ) { //проверка пароля для входа в сессиию
+						if ( isset($data->hostID, $data->password) && $this->authSession($connect, $data->hostID, $data->password) ) { //проверка пароля для входа в сессиию
 							$answer['result'] = true;
 						}
 						$this->sendData($connect, $answer); //отправка результата хосту (от него требуется операция захода в редактор при корректности прочего)
@@ -76,74 +90,30 @@ class SocketController extends SessionWebSocket {
 						$this->sendData($connect, $answer);
 						break;
 					default:
-						echo "\n\n UNKNOWN MESSAGE TYPE (data->action)!!! \n\n";
+						echo "\n\n UNKNOWN MESSAGE TYPE (data->action)!!!\n";print_r($data->action);echo "\n\n";
 						break;
 				}
 				break;
 			default:
-				echo "\n\n UNKNOWN MESSAGE TYPE (data->type)!!! \n\n";
+				echo "\n\n UNKNOWN MESSAGE TYPE (data->type)!!!\n";print_r($data->type);echo "\n\n";
 				break;
 		}
-
-		/*
-		if ( 'txtMessage' == $data->type ) {
-			if ( trim( $data->text ) ) { // проверяем, если передали пустую строку
-				$data->text = htmlspecialchars( $data->text ); //чистим от опасных элементов
-				$data = json_encode( json_encode( $data ) ); //кодируем обратно в json
-				$this->multicast($connect, $data); // пересылаем данные остальным участникам
-			}
-		}
-		else if ( 'pngMessage' == $data->type ) {
-			$data = json_encode( json_encode( $data ) ); //кодируем обратно в json
-			$this->multicast($connect, $data); // пересылаем данные остальным участникам
-		}
-		else if ( 'sessionMessage' == $data->type ) {
-			if ( 'open' == $data->action ) {
-				$this->info[(int)$connect]['login'] = $data->login;
-				if ($data->broad) {$this->sendInfo();}
-			}
-			else if ( 'create' == $data->action && $data->name && $data->password ) {
-				$flag = true;
-				foreach($this->sessions as $elem) {
-					if ( $elem['name'] == $data->name ) {
-						$flag = false;
-					}
-				}
-				if ( $flag ){
-					$this->sessions[] = array(
-						'name'=>$data->name,
-						'password'=>$data->password
-					);
-				}
-				
-				$this->sendInfo();
-			}
-			else if ( 'enter' == $data->action ){
-				$message = array( 'type'=>'submit', 'allow'=>false );
-				foreach($this->sessions as $key=>$elem) {
-					if ( ( $elem['name'] == $data->name ) && ( $elem['password'] == $data->password ) ) {
-						$this->sessions[$key][] = $this->info[(int)$connect]['login'];
-						$message['allow'] = true ; 
-					}
-				}
-				$message = json_encode( $message );
-				$this->sendData($connect, $message );
-			}
-			else if ( 'exit' == $data->action ){
-				$k = null;
-				$login = $this->info[(int)$connect]['login'];
-				foreach ($this->sessions as $key=>$val){
-					foreach ($val as $k=>$elem) {
-						if ($elem == $login) {
-							unset( $this->sessions[$key][$k] );
-						}
-					}
-				}
-			}
-		}
-		*/
 	}
 
+	private function sendSessionInfo($connect) { //отправка данных по созданным сессиям клиенту $connect, если он находится в сессии $this->startSession. Если вместо $connect указан null, то сообщение получат все в сессии $this->startSession
+		$message = array( //информация о сессиях
+			'type' => 'infoSession',
+			'items' => array()
+		);
+		$message['items'] = $this->getShortInfo();
+
+		if ( $connect && $this->info[(int)$connect]['session']==$this->startSession ) {
+			$this->sendData($connect, $message);
+		}
+		else {
+			$this->sessionCast(null, $this->startSession, $message);
+		}
+	}
 }
 
 ?>
