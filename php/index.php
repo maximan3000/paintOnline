@@ -1,8 +1,9 @@
 <?php
-/* echo json_encode( "res" ); exit(); */
 require_once 'classes/AjaxController.php';
 
 $ajax = new AjaxController();
+
+$res = null;
 
 if ( $_GET ) {
 	$res = $ajax->takeGet($_GET);

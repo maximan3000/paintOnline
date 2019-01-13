@@ -38,7 +38,7 @@ class AjaxController extends DBController {
 							WHERE login='".$get['login']."' AND password='".$get['password']."';" 
 						);  
 						if ( $query ) {
-							$this->setInfo( $query[0] );
+							$this->setInfo( $query );
 							$this->answer = $this->getInfo( array('login', 'name', 'avatar') );
 						}
 					}

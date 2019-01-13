@@ -1,0 +1,20 @@
+{
+    "name": "grayen/paintonline",
+    "description": "Graphic onlinre redactor with co-editing support",
+    "type": "project",
+    "licence": "MIT",
+    "authors": [
+        {
+            "name": "Maksim Petrov",
+            "email": "grayen.job@gmail.com"
+        }
+    ],
+    "require": {
+        "simplon/mysql": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "php/classes"
+        }
+    }
+}

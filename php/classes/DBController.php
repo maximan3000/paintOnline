@@ -1,54 +1,46 @@
 <?php
 
+require_once __DIR__.'/../../vendor/autoload.php';
 require_once 'SessionController.php';
 
-/*
-класс для работы с базой данных
-*/
+use Simplon\Mysql\PDOConnector;
+use Simplon\Mysql\Mysql;
+
 class DBController extends SessionController {
 
-	private $mysqli_db; //переменная с информацией о соединении с базой
+	public $mysqli_db;
 	
-	function __construct() { //конструктор класса
+	function __construct() {
 		parent::__construct();
-		$this->mysqli_db = mysqli_connect('localhost', 'root', '', 'paint'); //подключение к базе
-		mysqli_set_charset($this->mysqli_db, "utf8"); //изменение кодировки подключения к базе данных
+		$pdo = new PDOConnector(
+			'paintdb', 
+			'root', 
+			'pass', 
+			'paintdb'
+		);
+		$pdoConn = $pdo->connect('utf8', []);
+		$this->mysqli_db = new Mysql($pdoConn);
 	}
 
-	function __destruct() { // деструктор класса
-		mysqli_close( $this->mysqli_db); //закрытие соединения с базой
+	function __destruct() {
+		$this->mysqli_db->close();
 		parent::__destruct();
 	}
 
-	protected function dml($dml_str) { //выполнение dml операции с БД (data manipulation). Возвращает true при успешной операции
-		if ($dml_str&&0==mysqli_connect_errno()) { //проверка параметра и соединения с базой
-
-			$query_result= mysqli_query($this->mysqli_db, $dml_str); //выполнение запроса
-
-			if (0==mysqli_errno($this->mysqli_db)&&mysqli_affected_rows($this->mysqli_db)>0) { //проверка на наличие ошибок запроса к БД и проверка того, что были изменены данны в БД
-				return true;
-			}
+	public function dml($dml_str): bool { //Возвращает true при успешной операции
+		$query_result = false;
+		if ($dml_str) {
+			$query_result = $this->mysqli_db->executeSql($dml_str);
 		}
-		return false;
+		return $query_result;
 	}
 
-	protected function sql($sql_str) { //выполнение выборки данных из БД. Возвращает данные выборки либо false
-		if ($sql_str&&0==mysqli_connect_errno()) { //проверка параметра и соединения с базой
-
-			$query_result= mysqli_query($this->mysqli_db, $sql_str); //выполнение запроса
-
-			if (0==mysqli_errno($this->mysqli_db)) { //проверка на наличие ошибок запроса к БД
-				$res=null;
-				for ($i=0; $i<mysqli_num_rows($query_result) ; $i++){
-					$res[$i] = mysqli_fetch_array($query_result, MYSQLI_ASSOC);
-				}//получение результата запроса	
-
-				mysqli_free_result($query_result); //очистка буфера результата
-
-				return $res;
-			}
+	public function sql($sql_str): array { //Возвращает данные выборки
+		$query_result = array();
+		if ($sql_str) {
+			$query_result = $this->mysqli_db->fetchRow($sql_str);
 		}
-		return false;
+		return isset($query_result)?$query_result:array();
 	}
 
 }
