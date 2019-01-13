@@ -10,7 +10,7 @@ function auth_click(event) {
 	get_data += '&action=auth';
 
 	$.ajax({
-    url: 'php/index.php',         /* Куда пойдет запрос. */
+    url: 'php/index.php',
     method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
     dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
     contentType: 'application/json',
