@@ -1,5 +1,4 @@
 <?php
-
 	require_once 'classes/SocketController.php';
 
 	error_reporting(E_ALL);	//Выводим все ошибки и предупреждения 
