@@ -60,7 +60,7 @@ function get_list(data) {
 $(document).ready(function() {
 	webSocket = $.simpleWebSocket( //инициализация сокета-клиента
 		{
-			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'
+			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'   
 			//protocols: 'tcp', optional - не создано описание в WebSocket.php
 			timeout: 1000, // optional, default timeout between connection attempts
 			attempts: 5, // optional, default attempts until closing connection
