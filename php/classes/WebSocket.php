@@ -1,5 +1,6 @@
 <?php
 
+namespace App;
 /* реализация логики сокета (протокола) */
 class WebSocket
 {

@@ -1,5 +1,3 @@
-// JavaScript Document
-
 function makeLine(x, y, toX, toY) {
 	ctx.beginPath();
 	ctx.moveTo(x, y);

@@ -13,7 +13,7 @@
 <head>
 <meta charset="utf-8">
 <title> Редактор </title>
-<!-- основные стили страницы -->
+
 <link href="styles/bground.css?=4" rel="stylesheet" type="text/css">
 <link href="styles/redactor.css?=16" rel="stylesheet" type="text/css">
 
@@ -51,8 +51,6 @@
       </div>
       <form id="form_message" name="form_message" onsubmit="return false;">
 			<div class="form_inputs">
-				<!-- 
-					<textarea id="text_input" name="message" autofocus wrap="hard" placeholder="Введите ваше сообщение..." autocomplete="off" required></textarea> -->
 					<input id="text_input" name="message" autofocus placeholder="Введите ваше сообщение..." autocomplete="off" >
 					<button id="submit_btn" type="submit" name="" value="" onClick="submitFrom();"><img src="img/enter-key.png" alt="enter" height="25" width="15"> </button>
 			</div>
@@ -61,18 +59,14 @@
   </div>
 </div>
 
-<!--библиотека JQuery -->
 <script src="js/jquery-3.2.1.js" type="text/javascript"></script>
 <!--расширение JQuery для работы с сокетами ресурс: https://github.com/dchelimsky/jquery-websocket -->
 <script src="js/jquery.simple.websocket.js" type="text/javascript"></script>
 <!--расширение JQuery для полосы прокрутки ресурс: http://rocha.la/jQuery-slimScroll -->
 <script src="js/jquery.slimscroll.min.js" type="text/javascript"></script>
 
-<!-- основные скрипты -->
 <script src="js/redactor.js?=5" type="text/javascript"></script>
-<!-- работа кисти-skatch -->
 <script src="js/skatch.js?=3" type="text/javascript"></script>
-<!-- работа кисти-brush -->
 <script src="js/brush.js?=3" type="text/javascript"></script>
 <script src="js/bground.js?=3" type="text/javascript"></script>
 

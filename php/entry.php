@@ -1,8 +1,9 @@
 <?php
-require_once 'classes/AjaxController.php';
+
+namespace App;
+require_once __DIR__.'/init.php';
 
 $ajax = new AjaxController();
-
 $res = null;
 
 if ( $_GET ) {

@@ -1,4 +1,3 @@
-// JavaScript Document
 var login; //логин
 var webSocket; //сокет-клиент
 var sessionID; //идентификатор сессии
@@ -53,25 +52,25 @@ function get_list(data) {
 		}
 	}
 	else {
-			alert('неправильный пароль');
-		}
+		alert('неправильный пароль');
+	}
 }
 
 $(document).ready(function() {
-	webSocket = $.simpleWebSocket( //инициализация сокета-клиента
+	webSocket = $.simpleWebSocket(
 		{
 			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'   
-			//protocols: 'tcp', optional - не создано описание в WebSocket.php
-			timeout: 1000, // optional, default timeout between connection attempts
-			attempts: 5, // optional, default attempts until closing connection
-			dataType: 'json' // optional (xml, json, text), default json
+			protocols: 'tcp', //optional - не создано описание в WebSocket.php
+			timeout: 1000,
+			attempts: 5,
+			dataType: 'json'
 		}
 	);
-	webSocket.connect(); //соединение с сокет-сервером
+	webSocket.connect();
 	webSocket.listen(get_list);
 	
 	$.ajax({
-		url: 'php/index.php',
+		url: 'php/entry.php',
 		method: 'GET',
 		dataType: 'json',
 		data: 'action=login',
@@ -85,7 +84,7 @@ $(document).ready(function() {
 			};
 			webSocket.send(	message );
 		} 
-		}); 
+	}); 
 	
 	$("#submit_btn").click(function(event) {
 		event.preventDefault();

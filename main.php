@@ -1,4 +1,3 @@
-
 <?php
 	session_start();
 	if ( $_SESSION['login'] ) {
@@ -16,7 +15,6 @@
 <meta charset="utf-8">
 <title>Документ без названия</title>
 
-<!-- основные стили страницы -->
 <link href="styles/bground.css?=4" rel="stylesheet" type="text/css">
 <link href="styles/main.css?=4" rel="stylesheet" type="text/css">
 <link href="styles/auth.css?=4" rel="stylesheet" type="text/css">
@@ -48,25 +46,15 @@
   </div>
   
   <div id="session_container">
-  	<!-- элемент списка сессий
-  	<form>
-  		<span>session 1</span>
-  		<input type="password" value="пароль" class="input password" onfocus="this.value=''" required>
-  		<input type="submit" name="submit" value="войти" class="button" />
-  	</form>
-  	-->
   </div>  
   
   
 </div>
 
-<!--библиотека JQuery -->
 <script src="js/jquery-3.2.1.js" type="text/javascript"></script>
 <!--расширение JQuery для работы с сокетами ресурс: https://github.com/dchelimsky/jquery-websocket -->
 <script src="js/jquery.simple.websocket.js" type="text/javascript"></script>
 
-
-<!-- основные скрипты -->
 <script src="js/main.js?=7" type="text/javascript"></script>
 <script src="js/bground.js?=3" type="text/javascript"></script>
 

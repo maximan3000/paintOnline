@@ -1,7 +1,6 @@
 <?php
 
-require_once __DIR__.'/../../vendor/autoload.php';
-require_once 'SessionController.php';
+namespace App;
 
 use Simplon\Mysql\PDOConnector;
 use Simplon\Mysql\Mysql;

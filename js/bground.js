@@ -1,18 +1,15 @@
-// JavaScript Document
-
-
 $(document).ready(function(){
 	$("#logout").click(function(event) {
 		$.ajax({
-		url: 'php/index.php',         /* Куда пойдет запрос. */
-		method: 'GET',             /* Метод передачи (post или get), по умолчанию get. */
-		dataType: 'json',          /* Тип данных которые ожидаются в ответе (xml, json, script, html). */
-		contentType: 'application/json',
-		json: true, 
-		data: {'action':'logoff'},     /* Параметры передаваемые в запросе. */
-		success: function(data){   /* функция которая будет выполнена после успешного запроса.  */
-			location.reload();
-		} 
+			url: 'php/entry.php',
+			method: 'GET',
+			dataType: 'json',
+			contentType: 'application/json',
+			json: true,
+			data: {'action':'logoff'},
+			success: function(data) {
+				location.reload();
+			} 
 		}); 
 	});
 });

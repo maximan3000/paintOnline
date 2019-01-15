@@ -1,14 +1,12 @@
-// JavaScript Document
 var webSocket; //сокет-клиент
 //объекты для работы с canvas 
 var action = false; //отслеживание состояния мыши
 var ctx, skatch, brush; //ctx - само полотно 2d, skatch - объект кисти skatch, brush - объект кисти brush
 var website_color = "white";
 
-//обработка события отправки формы
 function submitFrom() {
 	sendMessage(form_message.message.value, "txtMessage"); 
-	form_message.message.value = ''; //чистим текстовое поле
+	form_message.message.value = '';
 	return false; //сбрасываем другие обработчики события
 }
 
@@ -47,7 +45,7 @@ function sendMessage(message, type) {
 		if ($.trim( message )) { //проверка, не пустое ли сообщение
 			
 			$.ajax({
-			url: 'php/index.php',
+			url: 'php/entry.php',
 			method: 'GET', 
 			dataType: 'json',
 			data: 'action=fulldata',
@@ -185,7 +183,7 @@ $(document).ready(function(){
 	webSocket.listen(getMessage);
 	
 	$.ajax({
-		url: 'php/index.php',
+		url: 'php/entry.php',
 		method: 'GET',
 		dataType: 'json',
 		data: 'action=login',
@@ -245,10 +243,3 @@ function load_actions() {
 	});
 
 }
-
-/*
-//событие закрытия страницы 
-$(document).unload(function(event) {
-	webSocket.close();  //закрытие сокета
-});
-*/

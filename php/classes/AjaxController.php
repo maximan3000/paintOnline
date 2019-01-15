@@ -1,6 +1,6 @@
 <?php
 
-require_once 'DBController.php';
+namespace App;
 
 /*
 класс для обработки ajax запросов
