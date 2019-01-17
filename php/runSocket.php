@@ -1,13 +1,22 @@
 <?php
 
 namespace App;
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
+
 require_once __DIR__.'/init.php';
 
-error_reporting(E_ALL);
-set_time_limit(0); 			//Время выполнения скрипта ограничено 180 секундами 
-ob_implicit_flush();		//Включаем вывод без буферизации  
+$server = IoServer::factory(
+    new HttpServer(
+        new WsServer(
+            new SocketController()
+        )
+    ),
+    '80',
+    '0.0.0.0'
+);
 
-$server = new SocketController("tcp://0.0.0.0:80");
 $server->run();
 
 ?>

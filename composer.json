@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "simplon/mysql": "*"
+        "simplon/mysql": "*",
+        "cboden/ratchet": "*"
     },
     "autoload": {
         "psr-4": {

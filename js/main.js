@@ -1,6 +1,7 @@
 var login; //логин
 var webSocket; //сокет-клиент
 var sessionID; //идентификатор сессии
+var openMessage; //первое сообщение в сессии сокета для его инициализации 
 
 function create_session_elem (data) {
 	var form = $('<form></form>');
@@ -18,13 +19,14 @@ function create_session_elem (data) {
 			'hostID' : hostID.attr('value'),
 			'password' : pass.val()
 		};
-		webSocket.send(	message );
+		webSocket.send(JSON.stringify(message));
 	});
 	
 	$('#session_container').append(form);
 }
 
 function get_list(data) {
+	data = JSON.parse(data.data);
 	console.dir(data);
 	if ( 'infoSession' == data.type){
 		$('#session_container form').remove();
@@ -34,13 +36,13 @@ function get_list(data) {
 	}
 	else if ( 'createSession' == data.type ){
 		if (data.result) {
-			var msg = { 
+			var message = { 
 				'type': 'sessionMessage', 
 				'action' : 'enter',
 				'hostID' : sessionID,
 				'password' : $(content_pswd).val()
 			};
-			webSocket.send(	msg );
+			webSocket.send(JSON.stringify(message));
 		}
 		else {
 			alert('неккоректные данные');
@@ -57,7 +59,7 @@ function get_list(data) {
 }
 
 $(document).ready(function() {
-	webSocket = $.simpleWebSocket(
+	/*webSocket = $.simpleWebSocket(
 		{
 			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'   
 			protocols: 'tcp', //optional - не создано описание в WebSocket.php
@@ -65,9 +67,9 @@ $(document).ready(function() {
 			attempts: 5,
 			dataType: 'json'
 		}
-	);
-	webSocket.connect();
-	webSocket.listen(get_list);
+	);*/
+	webSocket = new WebSocket('ws://127.0.0.1:3002');
+	webSocket.onmessage = get_list;
 	
 	$.ajax({
 		url: 'php/entry.php',
@@ -82,7 +84,16 @@ $(document).ready(function() {
 				'broad' : true,
 				'sessionID' : sessionID 
 			};
-			webSocket.send(	message );
+			console.dir(webSocket);
+			if (webSocket.readyState==1) {
+				webSocket.send(JSON.stringify(message));
+			}
+			else {
+				openMessage = message;
+				webSocket.onopen = function(e) {
+				    webSocket.send(JSON.stringify(openMessage));
+				};
+			}
 		} 
 	}); 
 	
@@ -94,6 +105,6 @@ $(document).ready(function() {
 			'name' : $(content_txt).val(),
 			'password' : $(content_pswd).val()
 		};
-		webSocket.send(	message );
+		webSocket.send(JSON.stringify(message));
 	});
 });

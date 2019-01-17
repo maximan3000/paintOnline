@@ -1,11 +1,13 @@
 <?php
 
 namespace App;
+use Ratchet\MessageComponentInterface;
+use Ratchet\ConnectionInterface;
 
 /*
 класс для реализации логики сессий (разделения клиентов на группы) в рамках сокет-сервера 
 */
-class SessionWebSocket extends WebSocket {
+class SessionWebSocket implements MessageComponentInterface {
 
 	/*добавилось: 
 	$info[(int)$connect]['clientID'] - идентификатор клиента (ид сеанса авторизации)
@@ -15,9 +17,10 @@ class SessionWebSocket extends WebSocket {
 	*/
 	protected $sessions; //информация о сессиях
 	protected $startSession = 'general'; //название изначальной сессии - общей для всех
+	protected $connects; //массив подключенных сокетов
+	protected $info; //информация о подключенных соединениях
 	
-	function __construct ($address) { //инициализация класса
-		parent::__construct($address);
+	function __construct () { //инициализация класса
 		$this->sessions = array( 
 			$this->startSession => array( 
 				'data' => array( //данные для подключения к сессии
@@ -30,6 +33,8 @@ class SessionWebSocket extends WebSocket {
 				//!!! в общей сессии задействовано только свойство 'connects'
 			)
 		);
+		$this->connects = array();
+		$this->info = array();
 	}
 
 	function __destruct() { //закрытие потока сокета
@@ -40,25 +45,34 @@ class SessionWebSocket extends WebSocket {
 	/*			переопределяемые методы (класса-потомка)	 	*/
 	/* ******************************************************** */
 
-	protected function onOpen($connect, $info) { //обработка события подключения к сокету
-		$this->info[(int)$connect]['session'] = $this->startSession; //запись в информацию о сокете - его принадлежности к сессии (изначально - общей)
-		$this->sessions[$this->startSession]['connects'][] = $connect; //отнесение данного сокета к списку сокетов общей сессии
+	public function onOpen(ConnectionInterface $conn) { //обработка события подключения к сокету
+		$this->info[$conn->resourceId]['session'] = $this->startSession; //запись в информацию о сокете - его принадлежности к сессии (изначально - общей)
+		$this->sessions[$this->startSession]['connects'][] = $conn->resourceId; //отнесение данного сокета к списку сокетов общей сессии
+		$this->connects[$conn->resourceId] = $conn;
 	}
 
-	protected function onMessage($connect, $data) { //обработка события получения сообщения - переопределение метода
-		$data = json_decode($data['payload']); //декодирование из json
-		return $data;
+	public function onMessage(ConnectionInterface $conn, $message) { //обработка события получения сообщения - переопределение метода
+		echo "Message from {$conn->resourceId}:\n"; print_r(json_decode($message));
+		return json_decode($message);
 	}
 
-	protected function onClose($connect) { //обработка события закрытия соединения - переопределение метода
-		echo "\n connection $connect closed...";
-		$this->clearConnect($connect);
+	public function onClose(ConnectionInterface $conn) { //обработка события закрытия соединения - переопределение метода
+		echo "\nConnection {$conn->resourceId} closed!";
+		$this->clearConnect($conn->resourceId);
 	}
 
-	protected function sendData($connect, $data) { //отправка данных - переопределение функции
-		echo "\nsend message to $connect:\n"; print_r($data); echo "\n";
-		$data = json_encode($data); //кодирование объекта в json
-		parent::sendData($connect, $data); //вызов старого метода
+	public function onError(ConnectionInterface $conn, \Exception $e) {
+        echo "An error has occurred: {$e->getMessage()}\n";
+        $conn->close();
+        $this->clearConnect($conn->resourceId);
+    }
+
+	public function sendData($conn, $data) {
+		echo "\nsend message to $conn:\n"; 
+		print_r($data); 
+		echo "\n";
+		$data = json_encode($data);
+		$this->connects[$conn]->send($data);
 	}
 
 	/* ******************************************************** */
@@ -129,7 +143,7 @@ class SessionWebSocket extends WebSocket {
 	protected function sessionCast($connection, $sessionID, $message) { //групповая пересылка сообщений, полученных от сокета-клиента (либо всем в группе, если вместо $connection стоит null)
 		$read = $this->sessions[$sessionID]['connects']; //формируем массив сокетов, которым отправим message
 
-		if ($connection) { 
+		if ($connection) {
 			unset($read[ array_search($connection, $read) ]); //удаляем сокет-автора message из рассылки 
 		}
 		foreach($read as $connect) {//массовая рассылка
@@ -173,14 +187,14 @@ class SessionWebSocket extends WebSocket {
 			$this->info[(int)$connect]['session'] = $this->startSession;
 			$this->sessions[ $this->startSession ]['connects'][] = $connect;
 		}
-		unset( $this->sessions[ $sessionID ] );
+		unset($this->sessions[$sessionID]);
 	}
 
-	private function clearConnect($connect) { //для закрытия соединения - удаляет все связи (прямые соединения) данного клиента
+	private function clearConnect($connId) { //для закрытия соединения - удаляет все связи (прямые соединения) данного клиента
 		foreach ($this->sessions as $key => $value) {
-			$index = array_search( $connect,  $value['connects']);
+			$index = array_search($connId, $value['connects']);
 			if ($index!==false) {
-				unset( $this->sessions[$key]['connects'][$index] );
+				unset($this->sessions[$key]['connects'][$index]);
 			}
 		}
 	}

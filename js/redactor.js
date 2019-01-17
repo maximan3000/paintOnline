@@ -15,7 +15,7 @@ function createMessage(data, flag='mine') {
 	
 	var msg = $("<div class='message'></div>");
 	var img = $("<img src='cursovic/"+data.avatar+"' alt='аватар' class='avatar'>");
-	var elem = $("<div class='text_content'>"+data.nickname+": <br> "+data.text + "</div>");
+	var elem = $("<div class='text_content'>"+data.name+": <br> "+data.text + "</div>");
 	
 	img.appendTo(msg);
 	elem.appendTo(msg);
@@ -45,22 +45,22 @@ function sendMessage(message, type) {
 		if ($.trim( message )) { //проверка, не пустое ли сообщение
 			
 			$.ajax({
-			url: 'php/entry.php',
-			method: 'GET', 
-			dataType: 'json',
-			data: 'action=fulldata',
-			success: function(data){ 
-				webSocket.send({
-					'type': 'txtMessage', //тип - сообщение чата
-					'nickname': data.nickname,
-					'avatar': data.avatar,
-					'text': message //текст сообщения
-				}); //отправка сообщения сокету-серверу
-				createMessage( {'text': message, 'nickname':data.nickname, 'avatar': data.avatar } , 'mine');
+				url: 'php/entry.php',
+				method: 'GET', 
+				dataType: 'json',
+				data: 'action=fulldata',
+				success: function(data){ 
+					var msg = {
+						'type': 'txtMessage',
+						'name': data.name,
+						'avatar': data.avatar,
+						'text': message
+					};
+					console.dir(data);
+					webSocket.send(JSON.stringify(msg));
+					createMessage( {'text': message, 'name':data.name, 'avatar': data.avatar } , 'mine');
 				} 
 			}); 
-			
-			
 		}
 	}
 	else if ("pngMessage"==type) {
@@ -68,15 +68,15 @@ function sendMessage(message, type) {
 		message.strokeStyle = ctx.strokeStyle;
 		message.lineWidth = ctx.lineWidth;
 		message.type = 'pngMessage';
-		webSocket.send(	message );
+		webSocket.send(JSON.stringify(message));
 	}
 }
 
 //обработчик события - получения сообщения от сервера
 function getMessage(message) { 
-	msg = message; //парсинг объекта json (строка => объект)
+	msg = JSON.parse(message.data);
 	if ( 'txtMessage' == msg.type ) {
-		createMessage( { 'text': msg.text, 'nickname': msg.nickname, 'avatar': msg.avatar } , 'alien'); //отображение полученного в чате сообщения
+		createMessage( { 'text': msg.text, 'name': msg.name, 'avatar': msg.avatar } , 'alien'); //отображение полученного в чате сообщения
 	}
 	else if ( 'pngMessage' == msg.type ) {
 		var temp = {"ga": ctx.globalAlpha, "sS": ctx.strokeStyle, "lW": ctx.lineWidth};
@@ -168,19 +168,8 @@ $(document).ready(function(){
 		size: '4px'
     });
 	
-	webSocket = $.simpleWebSocket( //инициализация сокета-клиента
-		{
-			url: 'ws://127.0.0.1:3002/', // address 'ws|wss://ip:port/'
-			//protocols: 'tcp', optional - не создано описание в WebSocket.php
-			dataType: 'json' // optional (xml, json, text), default json
-		}
-	);
-
-	webSocket.connect(); //соединение с сокет-сервером
-
-	//webSocket.isConnected());  // or: socket.isConnected(function(connected) {}); - проверка, есть ли соединение
-	
-	webSocket.listen(getMessage);
+	webSocket = new WebSocket('ws://127.0.0.1:3002');
+	webSocket.onmessage = getMessage;
 	
 	$.ajax({
 		url: 'php/entry.php',
@@ -194,14 +183,13 @@ $(document).ready(function(){
 				'broad' : true,
 				'sessionID' : data.sessionID 
 			};
-			webSocket.send(	message );
+			webSocket.send(JSON.stringify(message));
 			load_actions();
 		} 
 	}); 
 });
 
 function load_actions() {
-	//webSocket.removeAll(); //удаление всех обработчиков событий сокета
 
 	initcnvs(); //инициализация области canvas
 	
@@ -239,7 +227,7 @@ function load_actions() {
 			'type': 'sessionMessage', 
 			'action' : 'exit'
 		};
-		webSocket.send(	message );
+		webSocket.send(JSON.stringify(message));
 	});
 
 }

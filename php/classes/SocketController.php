@@ -1,7 +1,7 @@
 <?php 
 
 namespace App;
-
+use Ratchet\ConnectionInterface;
 
 /*
 класс для обработки сообщений, получаемых от клиента
@@ -25,18 +25,22 @@ class SocketController extends SessionWebSocket {
 		4) msg ( 'type' => 'infoSession', 'items' => array( number => array( 'hostID' => string, 'name' => string ), number => ...) ) - короткая информация по всем созданным сессиям
 	*/
 
-	function __construct ($address) {
-		parent::__construct($address);
+	function __construct () {
+		parent::__construct();
 	}
 
 	function __destruct() { //закрытие потока сокета
 		parent::__destruct();
 	}
 
-	protected function onMessage($connect, $data) { //обработка события получения сообщения	
-		$data = parent::onMessage($connect, $data); //вызов метода родителя
+	public function onMessage(ConnectionInterface $conn, $message) {
+		$data = parent::onMessage($conn, $message); //вызов метода родителя
+		$connect = $conn->resourceId;
 
-		echo "get message from $connect: ";print_r( $data ); echo "\n"; //выводим данные в консоль
+		if (!isset($data->type)) {
+			return;
+		}
+		
 		switch ($data->type) {
 			case 'txtMessage': //текстовое сообщение (для чата)
 				if ( trim( $data->text ) ) { // проверяем, если передали пустую строку
@@ -50,6 +54,7 @@ class SocketController extends SessionWebSocket {
 			case 'sessionMessage': //управляющее сообщение (для работы сессий)
 				switch ($data->action) {
 					case 'open': //первое действие при подключении - получение от клиента идентификатора его сессии
+						echo "openopen";
 						$this->info[(int)$connect]['clientID'] = $data->sessionID; //присваивание идентификатора клиенту
 						$this->replaceSession($connect); //перевод сессии клиента
 						$this->sendSessionInfo($connect); //пересылка созданных сессий клиенту $connect (перешлется, если он в общей сессии)
