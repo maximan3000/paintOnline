@@ -11,11 +11,14 @@
     ],
     "require": {
         "simplon/mysql": "*",
-        "cboden/ratchet": "*"
+        "cboden/ratchet": "*",
+        "webonyx/graphql-php": "*",
+        "rybakit/msgpack": "*",
+        "rbdwllr/reallysimplejwt": "*"
     },
     "autoload": {
         "psr-4": {
-            "App\\": "php/classes"
+            "App\\": "php/"
         }
     }
 }
