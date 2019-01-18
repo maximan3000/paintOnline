@@ -8,9 +8,12 @@ import { AlertService, AuthenticationService } from '@app/_services';
 
 @Component({ templateUrl: 'home.component.html' })
 export class HomeComponent implements OnInit, OnDestroy {
-    createSessionForm: FormGroup;
     currentUser: User;
     currentUserSubscription: Subscription;
+
+    createSessionForm: FormGroup;
+    loading = false;
+    submitted = false;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -23,7 +26,25 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.authenticationService.checkAuth();
     }
 
+    get f() { return this.createSessionForm.controls; }
+
     ngOnInit() {
+        this.createSessionForm = this.formBuilder.group({
+            name: ['', Validators.required],
+            password: ['', [Validators.required, Validators.minLength(6)]]
+        });
+    }
+
+    onSubmit() {
+        //TODO
+        this.submitted = true;
+
+        // stop here if form is invalid
+        if (this.createSessionForm.invalid) {
+            return;
+        }
+
+        this.submitted = false;
     }
 
     ngOnDestroy() {
