@@ -1,8 +1,10 @@
 ﻿<!-- nav -->
-<nav class="navbar navbar-expand navbar-dark bg-dark" *ngIf="currentUser">
+<nav class="d-flex justify-content-between navbar navbar-expand navbar-dark bg-dark" *ngIf="currentUser">
+    <div class="navbar-nav navbar-brand">
+        <a class="nav-item nav-link " (click)="logout()">Logout</a>
+    </div>
     <div class="navbar-nav">
-        <!--<a class="nav-item nav-link" routerLink="/">Home</a> -->
-        <a class="nav-item nav-link" (click)="logout()">Logout</a>
+        <span class="nav-item nav-link navbar-brand">Hello, {{currentUser.firstName}} {{currentUser.lastName}}!</span>
     </div>
 </nav>
 

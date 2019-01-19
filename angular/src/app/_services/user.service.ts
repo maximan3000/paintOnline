@@ -10,7 +10,7 @@ export class UserService {
     constructor(private http: HttpClient) { }
 
     register(user: User) {
-        var request = {
+        let request = {
             variables: {
                   user: user
             },

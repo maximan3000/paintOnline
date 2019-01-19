@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\PastServices;
 
 use Simplon\Mysql\PDOConnector;
 use Simplon\Mysql\Mysql;

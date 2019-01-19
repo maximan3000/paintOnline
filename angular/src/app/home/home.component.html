@@ -1,5 +1,8 @@
-﻿<h1>Hi {{currentUser.firstName}}!</h1>
-<form [formGroup]="createSessionForm" (ngSubmit)="onSubmit()">
+﻿<h1>Welcome to The Paint Online!</h1>
+<br>
+<div class="alert alert-primary">Create the session in which you want to paint</div>
+<div class="alert alert-primary">If you share the session password to you friend - he would can paint with you</div>
+<form [formGroup]="createSessionForm" (ngSubmit)="onSubmit()" class="pb-4 pt-3">
     <div class="form-group">
         <input type="text" placeholder="Session Name" formControlName="name" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.name.errors }" />
         <div *ngIf="submitted && f.name.errors" class="invalid-feedback">
@@ -16,5 +19,20 @@
     <div class="form-group">
         <button [disabled]="loading" class="btn btn-primary">Create</button>
         <img *ngIf="loading" class="pl-3" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+    </div>
+</form>
+
+
+<form *ngFor="let session of sessions" [formGroup]="session.formBuilder" (ngSubmit)="onSubmit()" class="form-inline">
+    <div class="form-row">
+        <div class="col mb-2">
+            <label for="name" class="sr-only">Session 1</label>
+            <input type="text" readonly class="form-control-plaintext" id="name" value="{{session.name}}">
+        </div>
+        <div class="col mx-sm-3 mb-2">
+            <label for="password" class="sr-only">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password">
+        </div>
+        <button type="submit" class="col btn btn-primary mb-2">Go</button>
     </div>
 </form>

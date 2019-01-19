@@ -24,7 +24,7 @@ export class AuthenticationService {
     }
 
     login(username: string, password: string) {
-        var request = {
+        let request = {
             variables: {
                   name: username,
                   pass: password
@@ -33,7 +33,7 @@ export class AuthenticationService {
         }
         return this.http.post<any>(AppSettings.API_ENDPOINT, JSON.stringify(request))
             .pipe(map(responce => {
-                var user = responce.data.authentificate;
+                let user = responce.data.authentificate;
                 // login successful if there's a jwt token in the response
                 if (user && user.token) {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes

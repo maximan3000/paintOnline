@@ -3,9 +3,9 @@
 	if ( $_SESSION['login'] ) {
 		echo "true";
 	}
-	/*else {
+	else {
 		header("Location: index.php");
-	}*/
+	}
 ?>
 
 <!doctype html>

@@ -1,28 +1,24 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
 
-import { User } from '@app/_models';
-import { AlertService, AuthenticationService } from '@app/_services';
+import { Session } from '@app/_models'
+import { AlertService, AuthenticationService, WebsocketService } from '@app/_services';
 
 
 @Component({ templateUrl: 'home.component.html' })
-export class HomeComponent implements OnInit, OnDestroy {
-    currentUser: User;
-    currentUserSubscription: Subscription;
-
+export class HomeComponent implements OnInit {
     createSessionForm: FormGroup;
     loading = false;
     submitted = false;
 
+    sessions: Session[];
+
     constructor(
         private formBuilder: FormBuilder,
         private authenticationService: AuthenticationService,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private websocketService: WebsocketService
     ) {
-        this.currentUserSubscription = this.authenticationService.currentUser.subscribe(user => {
-            this.currentUser = user;
-        });
         this.authenticationService.checkAuth();
     }
 
@@ -33,6 +29,31 @@ export class HomeComponent implements OnInit, OnDestroy {
             name: ['', Validators.required],
             password: ['', [Validators.required, Validators.minLength(6)]]
         });
+
+        console.dir(this.websocketService.websocket);
+        //this.websocketService.message(1);
+            /*.subscribe(
+                message => {
+                    console.dir(message);
+            });*/
+
+        /*this.websocketService.send({
+            'type': 'sessionMessage', 
+            'action' : 'open',
+            'broad' : true,
+            'sessionID' : 10 
+        });*/
+        
+        /*this.sessions = [];
+        let session = {
+            id: 1,
+            name: "lol",
+            formBuilder: this.formBuilder.group({
+                name: ['', Validators.required],
+                password: ['', [Validators.required, Validators.minLength(6)]]
+            })
+        };
+        this.sessions.push(session);*/
     }
 
     onSubmit() {
@@ -45,10 +66,5 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
 
         this.submitted = false;
-    }
-
-    ngOnDestroy() {
-        // unsubscribe to ensure no memory leaks
-        this.currentUserSubscription.unsubscribe();
     }
 }
