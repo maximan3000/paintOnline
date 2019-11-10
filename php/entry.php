@@ -3,7 +3,7 @@ namespace App;
 
 require_once __DIR__.'/init.php';
 
-use App\PastServices\AjaxController;
+use App\Services\AjaxController;
 
 $ajax = new AjaxController();
 $res = null;
@@ -13,5 +13,6 @@ if ( $_GET ) {
 else if ( $_POST ) {
 	$res = $ajax->takePost($_POST, $_FILES);
 }
+
 echo json_encode( $res );
 ?> 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\PastServices;
+namespace App\Services;
 
 /*
 класс для обработки ajax запросов
@@ -34,12 +34,13 @@ class AjaxController extends DBController {
 					if ( ''!=$get['login'] ) {
 						$query = $this->sql( "
 							SELECT login, name, avatar
-							FROM pastusers 
+							FROM users 
 							WHERE login='".$get['login']."' AND password='".$get['password']."';" 
-						);  
+						);  			
 						if ( $query ) {
 							$this->setInfo( $query );
 							$this->answer = $this->getInfo( array('login', 'name', 'avatar') );
+							$this->answer = $query;
 						}
 					}
 					break;
@@ -66,7 +67,7 @@ class AjaxController extends DBController {
 						}
 
 						if ( $this->dml( "
-							INSERT INTO pastusers(id, name, login, password, avatar)
+							INSERT INTO users(id, name, login, password, avatar)
 							VALUES (null, '".$post['username']."', '".$post['login']."', '".$post['password']."', '../img/$us_filename.png');" ) ) {
 							$this->answer = array( 'result' => true );
 							move_uploaded_file($files['avatar']['tmp_name'], "../img/".$post['login'].".png");

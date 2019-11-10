@@ -7,7 +7,6 @@ function auth_click(event) {
 	event.preventDefault();
 	var get_data = $(auth_data).serialize();
 	get_data += '&action=auth';
-
 	$.ajax({
 	    url: 'php/entry.php',
 	    method: 'GET',
@@ -16,13 +15,14 @@ function auth_click(event) {
 	    json: true,
 	    data: get_data,
 	    success: function(data) {
+	    	console.dir(data);
 	        if (data) {
 				$(location).attr('href','main.php');
 			}
 			else {
 				alert('Некорректные данные');
 			}
-	    } 
+	    }
     }); 
 }
 

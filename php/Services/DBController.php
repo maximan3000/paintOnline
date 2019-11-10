@@ -1,6 +1,6 @@
 <?php
 
-namespace App\PastServices;
+namespace App\Services;
 
 use Simplon\Mysql\PDOConnector;
 use Simplon\Mysql\Mysql;
@@ -12,10 +12,10 @@ class DBController extends SessionController {
 	function __construct() {
 		parent::__construct();
 		$pdo = new PDOConnector(
-			'paintdb', 
+			'localhost', 
 			'root', 
-			'pass', 
-			'paintdb'
+			'', 
+			'paint'
 		);
 		$pdoConn = $pdo->connect('utf8', []);
 		$this->mysqli_db = new Mysql($pdoConn);

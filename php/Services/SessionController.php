@@ -1,6 +1,6 @@
 <?php
 
-namespace App\PastServices;	
+namespace App\Services;	
 /*
 	класс, реализующий взаимодействие с текущей запущенной сессией
 */

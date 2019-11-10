@@ -14,10 +14,11 @@ $server = IoServer::factory(
             new SocketController()
         )
     ),
-    '80',
-    '0.0.0.0'
+    '3002',
+    '127.0.0.1'
 );
 
+echo "Socker runs at 127.0.0.1:3002";
 $server->run();
 
 ?>
